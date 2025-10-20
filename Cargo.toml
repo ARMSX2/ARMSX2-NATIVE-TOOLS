@@ -1,0 +1,17 @@
+[package]
+name = "armsx2-native-tools"
+authors = ["momo-AUX1"]
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+thiserror = "1.0"
+byteorder = "1.5"
+sha1 = "0.10"
+
+[dev-dependencies]
+tempfile = "3.10"
+chd = "0.3.3"
