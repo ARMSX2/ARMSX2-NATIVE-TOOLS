@@ -96,6 +96,43 @@ pub unsafe extern "C" fn convert_iso_to_chd(
     }
 }
 
+// JNI wrapper function for Android
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn Java_kr_co_iefriends_pcsx2_NativeApp_convertIsoToChd(
+    _env: *mut std::os::raw::c_void, 
+    _class: *mut std::os::raw::c_void, 
+    input_iso_path: *const c_char,
+    output_chd_path: *const c_char,
+) -> c_int {
+    if input_iso_path.is_null() {
+        return ConversionStatus::NullPointer as c_int;
+    }
+
+    let input = match unsafe { CStr::from_ptr(input_iso_path) }.to_str() {
+        Ok(path) => PathBuf::from(path),
+        Err(_) => return ConversionStatus::InvalidUtf8 as c_int,
+    };
+
+    let output = {
+        let mut output_path = input.clone();
+        if let Some(stem) = output_path.file_stem() {
+            let mut new_name = stem.to_os_string();
+            new_name.push(".chd");
+            output_path.set_file_name(new_name);
+            output_path
+        } else {
+            let mut fallback = input.clone();
+            fallback.set_extension("chd");
+            fallback
+        }
+    };
+
+    match convert_iso_to_chd_internal(&input, &output) {
+        Ok(()) => ConversionStatus::Success as c_int,
+        Err(err) => ConversionStatus::from_error(&err) as c_int,
+    }
+}
+
 fn convert_iso_to_chd_internal(input: &Path, output: &Path) -> Result<(), ConversionError> {
     let metadata = fs::metadata(input).map_err(|err| match err.kind() {
         io::ErrorKind::NotFound => ConversionError::InputNotFound(input.to_path_buf()),
