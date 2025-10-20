@@ -11,6 +11,7 @@ crate-type = ["cdylib"]
 thiserror = "1.0"
 byteorder = "1.5"
 sha1 = "0.10"
+jni = "0.21"
 
 [dev-dependencies]
 tempfile = "3.10"

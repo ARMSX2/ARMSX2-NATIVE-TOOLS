@@ -1,9 +1,13 @@
 /*
     armsx2-native-tools - Native tools for the ARMSX2 project this library will include helpers and tools for use in the Android, iOS and Xbox/PC A(RM)SX2 apps.
     see LICENSE for license information.
+    by momo-AUX1, 2025.
 */
 
 use byteorder::{BigEndian, ByteOrder, WriteBytesExt};
+use jni::objects::JString;
+use jni::sys::{jclass, jstring, JNIEnv as JNIEnvPtr};
+use jni::JNIEnv;
 use sha1::{Digest, Sha1};
 use std::ffi::CStr;
 use std::fs::{self, File};
@@ -98,19 +102,33 @@ pub unsafe extern "C" fn convert_iso_to_chd(
 
 // JNI wrapper function for Android
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn Java_kr_co_iefriends_pcsx2_NativeApp_convertIsoToChd(
-    _env: *mut std::os::raw::c_void, 
-    _class: *mut std::os::raw::c_void, 
-    input_iso_path: *const c_char,
-    output_chd_path: *const c_char,
+pub unsafe extern "system" fn Java_kr_co_iefriends_pcsx2_NativeApp_convertIsoToChd( // Should probably change this before release...
+    env: *mut JNIEnvPtr,
+    _class: jclass,
+    input_iso_path: jstring,
 ) -> c_int {
+    if env.is_null() {
+        return ConversionStatus::Internal as c_int;
+    }
+
     if input_iso_path.is_null() {
         return ConversionStatus::NullPointer as c_int;
     }
 
-    let input = match unsafe { CStr::from_ptr(input_iso_path) }.to_str() {
-        Ok(path) => PathBuf::from(path),
-        Err(_) => return ConversionStatus::InvalidUtf8 as c_int,
+    let mut env = match unsafe { JNIEnv::from_raw(env) } {
+        Ok(env) => env,
+        Err(_) => return ConversionStatus::Internal as c_int,
+    };
+
+    let input = {
+        let j_input = unsafe { JString::from_raw(input_iso_path) };
+        match env.get_string(&j_input) {
+            Ok(jni_str) => match jni_str.to_str() {
+                Ok(text) => PathBuf::from(text),
+                Err(_) => return ConversionStatus::InvalidUtf8 as c_int,
+            },
+            Err(_) => return ConversionStatus::InvalidUtf8 as c_int,
+        }
     };
 
     let output = {
