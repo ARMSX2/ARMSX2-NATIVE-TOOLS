@@ -1,0 +1,5 @@
+[target.aarch64-linux-android]
+# You may need to adjust the paths below to match your Android NDK installation...
+linker = "/Users/mohammed/Library/Android/sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android21-clang"
+ar = "/Users/mohammed/Library/Android/sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/darwin-x86_64/bin/llvm-ar"
+rustflags = ["-C", "link-args=-Wl,-z,max-page-size=16384"]
