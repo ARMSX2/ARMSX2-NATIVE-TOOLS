@@ -1,1 +1,2 @@
-jpolo please write something here
+# What is ARMSX2 native tools?
+ARMSX2 native tools includes useful helpers for various platforms that the emulator supports, including: Android, iOS, Xbox/UWP and PC, they are used for a variety of tasks where performance is critical and to access low level stuff such as converting ISO games to CHD for file compression. 
